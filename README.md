@@ -57,7 +57,7 @@ POST-запрос .../charity_project/:
 {
   "invested_amount": 0,
   "fully_invested": false,
-  "create_date": "2023-02-13T15:11:47.980127",
+  "create_date": "2023-03-13T15:11:47.980127",
   "name": "На корм для кошек",
   "description": "Кошки хотят кушать",
   "full_amount": 2500,
