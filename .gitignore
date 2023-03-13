@@ -130,3 +130,7 @@ dmypy.json
 
 # .idea
 .idea
+
+# Тестовая бд
+test.db
+fastapi.db
