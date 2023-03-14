@@ -4,7 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import CharityProject, Donation
-
+from datetime import datetime
+from typing import Union, List
 
 async def check_not_invested(
     session: AsyncSession,
@@ -22,37 +23,22 @@ async def check_not_invested(
 
 
 async def investment_process(
-    session: AsyncSession,
-    obj
-):
-    """Инвестирование пожертвований в незакрытые проекты."""
-    project, donation = await check_not_invested(session)
-    if not project or not donation:
-        await session.commit()
-        await session.refresh(obj)
-        return obj
-    balance_project = project.full_amount - project.invested_amount
-    balance_donation = donation.full_amount - donation.invested_amount
-    if balance_project > balance_donation:
-        project.invested_amount += balance_donation
-        donation.invested_amount += balance_donation
-        donation.fully_invested = True
-        donation.close_date = datetime.now()
-    elif balance_project == balance_donation:
-        project.invested_amount += balance_donation
-        donation.invested_amount += balance_donation
-        project.fully_invested = True
-        donation.fully_invested = True
-        project.close_date = datetime.now()
-        donation.close_date = datetime.now()
-    else:
-        project.invested_amount += balance_project
-        donation.invested_amount += balance_project
-        project.fully_invested = True
-        project.close_date = datetime.now()
-    session.add(project)
-    session.add(donation)
-    await session.commit()
-    await session.refresh(project)
-    await session.refresh(donation)
-    return await investment_process(session, obj)
+    target: Union[CharityProject, Donation],
+    sources: List[Union[CharityProject, Donation]]
+) -> List[Union[CharityProject, Donation]]:
+    target.invested_amount = target.invested_amount or 0
+    count = 0
+    for obj in sources:
+        money = min(
+            obj.full_amount - obj.invested_amount,
+            target.full_amount - target.invested_amount
+        )
+        for item in [obj, target]:
+            item.invested_amount += money
+            if item.full_amount == item.invested_amount:
+                item.close_date = datetime.now()
+                item.fully_invested = True
+        count += 1
+        if target.fully_invested:
+            break
+    return sources[:count]

@@ -10,6 +10,7 @@ from app.api.validators import (check_amount,
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charityproject_crud
+from app.models import Donation
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
@@ -31,7 +32,11 @@ async def create_charityproject(
     """Создание проекта - только для суперюзеров."""
     await check_project_name(charityproject.name, session)
     new_project = await charityproject_crud.create(charityproject, session)
-    new_project = await investment_process(session, new_project)
+    new_objects = await charityproject_crud.get_investment(session, Donation)
+    if new_objects:
+        session.add_all(investment_process(new_project, new_objects))
+    await session.commit()
+    await session.refresh(new_project)
     return new_project
 
 

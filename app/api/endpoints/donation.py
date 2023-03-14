@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_async_session
 from app.core.user import current_superuser, current_user
 from app.crud.donation import donation_crud
-from app.models.user import User
+from app.models import CharityProject, User
 from app.schemas.donation import DonationCreate, ExtendedDonationtDB, DonationtDB
 from app.services.investment import investment_process
 
@@ -51,5 +51,11 @@ async def create_donation(
 ):
     """Создание пожертвования - для аутентифицированного пользователя."""
     donation = await donation_crud.create(donation, session, user)
-    donation = await investment_process(session, donation)
+    donation_objects = await donation_crud.get_investment(
+        session, CharityProject
+    )
+    if donation_objects:
+        session.add_all(investment_process(donation, donation_objects))
+    await session.commit()
+    await session.refresh(donation)
     return donation
