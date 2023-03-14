@@ -7,6 +7,7 @@ from app.models import CharityProject, Donation
 from datetime import datetime
 from typing import Union, List
 
+
 async def check_not_invested(
     session: AsyncSession,
 ):
@@ -22,7 +23,7 @@ async def check_not_invested(
     return project, donation
 
 
-async def investment_process(
+def investment_process(
     target: Union[CharityProject, Donation],
     sources: List[Union[CharityProject, Donation]]
 ) -> List[Union[CharityProject, Donation]]:

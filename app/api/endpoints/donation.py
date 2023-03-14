@@ -50,7 +50,7 @@ async def create_donation(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Создание пожертвования - для аутентифицированного пользователя."""
-    donation = await donation_crud.create(donation, session, user)
+    donation = await donation_crud.create(donation, session, user, commit=False)
     donation_objects = await donation_crud.get_investment(
         session, CharityProject
     )

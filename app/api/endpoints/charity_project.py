@@ -27,11 +27,11 @@ router = APIRouter()
 )
 async def create_charityproject(
     charityproject: CharityProjectCreate,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Создание проекта - только для суперюзеров."""
     await check_project_name(charityproject.name, session)
-    new_project = await charityproject_crud.create(charityproject, session)
+    new_project = await charityproject_crud.create(charityproject, session, commit=False)
     new_objects = await charityproject_crud.get_investment(session, Donation)
     if new_objects:
         session.add_all(investment_process(new_project, new_objects))
@@ -79,11 +79,14 @@ async def partially_update_project(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Редактирование проекта - только для суперюзеров."""
+
     project = await check_existence(project_id, session)
     check_closed(project)
     if obj_in.name is not None:
         await check_project_name(obj_in.name, session)
     if obj_in.full_amount is not None:
         check_amount(project, obj_in.full_amount)
-    project = await charityproject_crud.update(obj_in, project, session)
+    project = await charityproject_crud.update(obj_in, project, session, commit=False)
+    await session.commit()
+    await session.refresh(project)
     return project

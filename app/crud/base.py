@@ -8,7 +8,7 @@ Model = TypeVar('Model')
 
 class BaseCRUD:
 
-    def __init__(self, model) -> None:
+    def __init__(self, model):
         self.model = model
 
     async def create(
