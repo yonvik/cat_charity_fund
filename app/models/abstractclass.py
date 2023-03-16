@@ -18,7 +18,7 @@ class BaseClass(Base):
     create_date = Column(DateTime, default=datetime.now)
     close_date = Column(DateTime, nullable=True)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return (
             f'full_amount: {self.full_amount}, '
             f'invested_amount: {self.invested_amount}, '

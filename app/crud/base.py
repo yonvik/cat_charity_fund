@@ -1,14 +1,12 @@
-from typing import Optional, TypeVar, List
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-Model = TypeVar('Model')
-
 
 class BaseCRUD:
 
-    def __init__(self, model):
+    def __init__(self, model) -> None:
         self.model = model
 
     async def create(
@@ -17,7 +15,7 @@ class BaseCRUD:
         session: AsyncSession,
         user: Optional[int] = None,
         commit: bool = True
-    ) -> Model:
+    ):
         """Создание объекта и сохранение в БД."""
         obj_in_data = obj_in.dict()
         if user is not None:
@@ -33,7 +31,7 @@ class BaseCRUD:
         self,
         obj_id: int,
         session: AsyncSession
-    ) -> Model:
+    ):
         """Получение объекта из БД по id."""
         db_obj = await session.execute(
             select(self.model).where(self.model.id == obj_id)
@@ -43,7 +41,7 @@ class BaseCRUD:
     async def get_multi(
         self,
         session: AsyncSession
-    ) -> List[Model]:
+    ):
         """Получение всех обьектов из БД."""
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
@@ -51,11 +49,12 @@ class BaseCRUD:
     async def get_investment(
         self,
         session: AsyncSession,
-        model: Model
-    ) -> Model:
+        obj
+    ):
+        """Получение из БД первых по очереди незакрытых проектов и пожертвований."""
         db_obj = await session.execute(
-            select(model).where(
-                model.fully_invested == 0
+            select(obj).where(
+                obj.fully_invested == 0
             )
         )
         return db_obj.scalars().all()
