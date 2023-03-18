@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +13,7 @@ class DonationCRUD(BaseCRUD):
         self,
         user: User,
         session: AsyncSession
-    ):
+    ) -> List[Donation]:
         """Получение всех пожертвований пользователя."""
         donations = await session.execute(
             select(Donation).where(
