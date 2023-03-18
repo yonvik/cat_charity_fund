@@ -31,10 +31,17 @@ async def create_charityproject(
 ):
     """Создание проекта - только для суперюзеров."""
     await check_project_name(charityproject.name, session)
-    new_project = await charityproject_crud.create(charityproject, session, commit=False)
-    new_objects = await charityproject_crud.get_investment(session, Donation)
-    if new_objects:
-        session.add_all(investment_process(new_project, new_objects))
+    new_project = await charityproject_crud.create(
+        charityproject,
+        session,
+        commit=False
+    )
+    model_objects = await charityproject_crud.get_investment_active(
+        session,
+        Donation
+    )
+    if model_objects:
+        session.add_all(investment_process(new_project, model_objects))
     await session.commit()
     await session.refresh(new_project)
     return new_project

@@ -1,7 +1,10 @@
-from typing import Optional
+from typing import Optional, List, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+ModelType = TypeVar('ModelType')
 
 
 class BaseCRUD:
@@ -15,7 +18,7 @@ class BaseCRUD:
         session: AsyncSession,
         user: Optional[int] = None,
         commit: bool = True
-    ):
+    ) -> ModelType:
         """Создание объекта и сохранение в БД."""
         obj_in_data = obj_in.dict()
         if user is not None:
@@ -31,7 +34,7 @@ class BaseCRUD:
         self,
         obj_id: int,
         session: AsyncSession
-    ):
+    ) -> ModelType:
         """Получение объекта из БД по id."""
         db_obj = await session.execute(
             select(self.model).where(self.model.id == obj_id)
@@ -41,16 +44,16 @@ class BaseCRUD:
     async def get_multi(
         self,
         session: AsyncSession
-    ):
+    ) -> List[ModelType]:
         """Получение всех обьектов из БД."""
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
-    async def get_investment(
+    async def get_investment_active(
         self,
         session: AsyncSession,
         obj
-    ):
+    ) -> ModelType:
         """Получение из БД первых по очереди незакрытых проектов и пожертвований."""
         db_obj = await session.execute(
             select(obj).where(

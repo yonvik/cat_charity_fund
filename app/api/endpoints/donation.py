@@ -50,12 +50,17 @@ async def create_donation(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Создание пожертвования - для аутентифицированного пользователя."""
-    donation = await donation_crud.create(donation, session, user, commit=False)
-    donation_objects = await donation_crud.get_investment(
+    donation = await donation_crud.create(
+        donation,
+        session,
+        user,
+        commit=False
+    )
+    model_objects = await donation_crud.get_investment_active(
         session, CharityProject
     )
-    if donation_objects:
-        session.add_all(investment_process(donation, donation_objects))
+    if model_objects:
+        session.add_all(investment_process(donation, model_objects))
     await session.commit()
     await session.refresh(donation)
     return donation
